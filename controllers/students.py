@@ -8,6 +8,7 @@ students = [
     {"id": 4, "name": "Raj"},
 ]
 
+
 def index(req):
     return [student for student in students], 200
 
@@ -18,8 +19,13 @@ def create(req):
     return new_student, 201
 
 def update(req, name):
+    keys = ["name", "favourite_food", "age", "last_holiday", "ninja_or_pirate"]
     student = find_by_name(name)
     data = req.get_json()
+    for key, val in data.items():
+        if key not in keys:
+            keys_string = ", ".join(keys)
+            raise BadRequest(f"You can only add the following data: {keys_string}")
     for key, val in data.items():
         student[key] = val
     return student, 200
@@ -27,10 +33,14 @@ def update(req, name):
 def destroy(req, name):
     student = find_by_name(name)
     students.remove(student)
-    return student, 204
+    return {"msg": f"{name} was deleted"}, 200
+
+def get_student(req, name):
+    student = find_by_name(name)
+    return student, 200
 
 def find_by_name(name):
     try:
-        return next(student for student in students if student['name'] == name)
+        return next(student for student in students if student['name'].lower() == name.lower())
     except:
         raise BadRequest(f"We don't have a student called {name}!")
